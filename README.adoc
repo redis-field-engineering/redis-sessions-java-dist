@@ -5,6 +5,7 @@
 :project-group:      com.redis
 :project-version:    0.1.12
 :micrometer-version: 1.10.2
+:dist-repo-name:     {project-name}-dist
 :codecov-token:      38MjMBOc2i
 
 image:https://github.com/{project-owner}/{project-name}/actions/workflows/early-access.yml/badge.svg["Build Status", link="https://github.com/{project-owner}/{project-name}/actions/workflows/early-access.yml"]
@@ -370,5 +371,5 @@ With this done, when you're application runs the metrics will be visible at link
 
 == Support
 
-{name} is supported by Redis, Inc. for enterprise-tier customers as a 'Developer Tool' under the https://redis.io/legal/software-support-policy/[Redis Software Support Policy.] For non enterprise-tier customers we supply support for {name} on a good-faith basis.
+{project-name} is supported by Redis, Inc. for enterprise-tier customers as a 'Developer Tool' under the https://redis.io/legal/software-support-policy/[Redis Software Support Policy.] For non enterprise-tier customers we supply support for {project-name} on a good-faith basis.
 To report bugs, request features, or receive assistance, please https://github.com/{project-owner}/{dist-repo-name}/issues[file an issue].
