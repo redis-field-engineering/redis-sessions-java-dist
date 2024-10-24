@@ -367,3 +367,8 @@ management.endpoints.web.exposure.include: info, health, prometheus
 ----
 
 With this done, when you're application runs the metrics will be visible at link:http://<host>:<port>/actuator/prometheus
+
+== Support
+
+{name} is supported by Redis, Inc. for enterprise-tier customers as a 'Developer Tool' under the https://redis.io/legal/software-support-policy/[Redis Software Support Policy.] For non enterprise-tier customers we supply support for {name} on a good-faith basis.
+To report bugs, request features, or receive assistance, please https://github.com/{project-owner}/{dist-repo-name}/issues[file an issue].
