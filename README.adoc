@@ -1,0 +1,369 @@
+= Redis Sessions Java
+:linkattrs:
+:project-owner:      redis-field-engineering
+:project-name:       redis-sessions-java
+:project-group:      com.redis
+:project-version:    0.1.12
+:micrometer-version: 1.10.2
+:codecov-token:      38MjMBOc2i
+
+image:https://github.com/{project-owner}/{project-name}/actions/workflows/early-access.yml/badge.svg["Build Status", link="https://github.com/{project-owner}/{project-name}/actions/workflows/early-access.yml"]
+image:https://codecov.io/gh/{project-owner}/{project-name}/graph/badge.svg?token={codecov-token}["Coverage", link="https://codecov.io/gh/{project-owner}/{project-name}"]
+
+
+Redis Sessions Java is a highly performant, feature rich, distributed session state manager for the Java ecosystem.
+Distributed Session Managers are typically very simple key-value stores that allow you to maintain session state between a client and a server, while balancing the load for a given client across a number of servers.
+Simple in concept, and full of dangers and pitfalls that we have worked numerous customers and community through.
+Redis Sessions Java is our attempt to address the most common asks we see from our users.
+
+== Features
+
+In addition to the standard key/value features inherent in any proper distributed session manager, Redis Sessions Java also provides the following:
+
+* A flexible local caching layer to keep up to date session data without the need to reach out to Redis
+* Monitoring of key session metrics, particularly large sessions, and heavily accessed sessions
+* Flexible indexing capabilities, allowing searchable sessions
+* Bulk session operations, particularly bulk reads and bulk deletes
+
+== Usage - Vanilla Java
+
+=== Add Redis Sessions Java to your project
+
+==== Maven
+
+To add Redis Sessions Java to your Maven project, simply add the following to your `pom.xml` file:
+
+[source,xml]
+[subs="verbatim,attributes"]
+.pom.xml
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>{project-name}</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+==== Gradle
+
+Add the Redis Sessions Java dependency to your `build.gradle` file:
+
+[source,groovy]
+[subs="attributes"]
+.build.gradle
+----
+dependencies {
+    implementation '{project-group}:{project-name}:{project-version}'
+}
+----
+
+
+=== The RedisSessionProvider
+
+Using Redis Sessions Java revolves around using the `RedisSessionProvider`.
+The `RedisSessionProvider` is responsible for maintaining access to Redis, managing the indexing of sessions, querying sessions, creating and updating sessions, basically it's the center of Redis Sessions Java.
+To initialize the `RedisSessionProvider`, simply pass in a `RedisModuleClient` and a `RedisSessionProviderConfiguration`.
+
+[,java]
+----
+RedisSessionProviderConfiguration config = RedisSessionProviderConfiguration
+        .builder()
+        .build();
+RedisSessionProvider sp = RedisSessionProvider.create(client,config);
+----
+
+==== Create a Session
+
+To create a session simply call `createSession` on the `RedisSessionProvider` passing in a unique session id and a hash map containing the properties for your session:
+
+[,java]
+----
+String uuid = UUID.randomUUID().toString();
+Map<String, Object> properties = new HashMap<>();
+properties.put("name","steve");
+properties.put("age", 34);
+Session session = sp.createSession(uuid, properties);
+----
+
+==== Finding a session
+
+Given a UUID, you can find a given session by by calling `findSessionById`:
+
+[,java]
+----
+Session session = sp.findSessionById(uuid.toString());
+----
+
+==== Manipulating a session
+
+After the session is materialized, you can operate on the session data by calling `getAttribute` and `setAttribute`:
+
+[,java]
+----
+sp.setAttribute("foo","bar");
+sp.setAttribute("testObj", new TestModel("Steve", 34))
+Optional<String> bar = sp.getAttribute("foo");
+Optional<TestModel> model = session.getAttribute("testObj");
+----
+
+==== Filtering sessions
+
+Filtering sessions involves two steps:
+
+. Building an index for your sessions
+. Querying your sessions
+
+===== Building a session index
+
+To build a session index, create a `RedisIndexConfiguration`, and add it to the `RedisSessionProviderConfiguration` when initializing the `RedisSessionProvider`.
+Redis Sessions Java supports all of the https://redis.io/docs/interact/search-and-query/indexing/[Search and Query index types].
+Each indexed field must resolve to a single scalar value.
+Each index type has its own default java type set, if the field you'll be using does not match this (e.g.
+you're saving an enum or UUID), you must explicitly set the javaType in the builder.
+We have default converters for a variety of types, but if the type you are planning to store in the index does not contain one of the following, you must provide your own `Converter` class (which simply tells the Session manager how to convert/parse your object to/from a String):
+
+* `Boolean`
+* `Byte`
+* `Double`
+* `Enum`
+* `Float`
+* `GeoLoc`
+* `Integer`
+* `Long`
+* `Short`
+* `String`
+* `Url`
+* `Uri`
+* `Uuid`
+
+[,java]
+----
+RedisIndexConfiguration.builder()
+.withField(IndexedField.numeric("age").javaType(Long.class).build())
+.withField(IndexedField.geo("loc").build())
+.withField(IndexedField.tag("firstName").build())
+.withField(IndexedField.text("description").build())
+.withField(IndexedField.tag("jobClassification")
+        .javaType(JobClassification.class).build())
+.withField(IndexedField.tag("uuid")
+        .javaType(UUID.class).build())
+.build();
+----
+
+====== Querying a session index
+
+To query a session index, simply use the session provider's `findSessions` method, adding a filter and maximum number of sessions you need to pull back:
+
+[,java]
+----
+Filter filter = QueryBuilder
+    .between("age", 30, 40)
+    .and()
+    .equals("firstName","steve")
+    .or()
+    .geoRadius("loc", new GeoLoc(-80.688753, 28.185053), 5, GeoUnit.mi)
+    .and()
+    .equals("jobClassification", JobClassification.remote.name());
+Map<String, RedisSession> sessions = sp.findSessions(filter, 10);
+----
+
+==== The Local Cache
+
+One feature of Redis Sessions Java is the presence of a local caching layer.
+A common issue we see with sessions, particularly large sessions, is a given session framework being overloaded and bandwidth/io constrained to the distributed session store back plane.
+To mitigate this Redis Sessions Java incorporates a hybrid approach to maintaining sessions between your application's local memory and Redis.
+
+===== Tuning the Local Cache
+
+There are two settings you use to tune the local cache:
+
+. `localCacheMaxSize` - This is the maximum local cache size (in bytes) the session manager will use before it begins evicting items from the local cache.
+The Bigger this number is, the more data will be stored in your local cache.
+. `minLocalRecordSize` - This is the minimum size of a record that can be inserted into the local cache.
+The larger this number is, the fewer records will be eligible for cache insertion.
+
+==== Monitoring
+
+The RedisSessionProvider provides a number of gauges for monitoring the activity of the Session Manager via https://github.com/micrometer-metrics/micrometer[micrometer].
+They are as follows:
+
+|===
+| Metric Gauge Name | Description | Approximation or Exact
+
+| redis_local_cache_average_entry_size
+| The average size of each entry within the local Redis cache.
+|
+
+| redis_session_largest
+| The size of the largest sessions currently stored in Redis.
+|
+
+| redis_sessions_unique_sessions
+| The number of unique sessions stored in Redis.
+|
+
+| redis_session_most_accessed
+| The access frequency of session that has been accessed the most times.
+|
+
+| redis_local_cache_size
+| The total size of the local Redis cache, in bytes.
+|
+
+| redis_local_cache_num_entries
+| The total number of entries currently stored in the local Redis cache.
+|
+
+| redis_local_cache_capacity
+| The maximum number of entries or total size that the local Redis cache can hold.
+|
+
+| redis_session_size_quantiles
+| The size of a session at a given quantile within Redis, the Session Manager reports .5, .75, .9, .99, and 1.0 quantiles by default.
+|
+|===
+
+NOTE: with the exception of the number of entries and the capacity of the local cache, these figures will all be approximations.
+
+== Usage - Spring
+
+Redis Sessions Java also has an available Spring Package, making it easy to add to your Spring apps.
+
+=== Maven
+Add the following to your `pom.xml` file:
+
+[source,xml]
+[subs="verbatim,attributes"]
+.pom.xml
+----
+<dependency>
+    <groupId>{project-group}</groupId>
+    <artifactId>{project-name}-spring</artifactId>
+    <version>{project-version}</version>
+</dependency>
+----
+
+=== Gradle
+
+Add the following to your `build.gradle` file
+
+[source,groovy]
+[subs="attributes"]
+.build.gradle
+----
+dependencies {
+    implementation '{project-group}:{project-name}-spring:{project-version}'
+}
+----
+
+=== Enable Redis Sessions
+
+To enable the http session manager repository for Redis Sessions Java, you need only add the `EnableRedisSessions` annotation to your config class:
+
+[,java]
+----
+@Configuration
+@EnableRedisSessions
+public class RedisSessionsConfig {
+}
+----
+
+=== Configuration
+
+You can configure the following items within the Session manager using the `application.properties` file.
+
+|===
+| Configuration Property | Description | Default Value
+
+| `redis.host`
+| The hostname of the Redis server.
+| `localhost`
+
+| `redis.port`
+| The port number on which Redis runs.
+| `6379`
+
+| `redis.prefix`
+| Prefix used for all keys to avoid clashes.
+|
+
+| `redis.cache.cap`
+| Maximum size of the local cache.
+| `10000000`
+
+| `redis.cache.min`
+| Minimum size of object in local cache
+| `0`
+
+| `redis.session.size.quantiles`
+| Quantiles for session size metrics.
+| `0.5,0.75,0.9,0.99,1`
+|===
+
+==== Index Configuration
+
+In addition to the normal configuration properties, you can also configure how your session index will be built.
+To do this, all you need to do is create a bean for a RedisIndexConfiguration`:
+
+[,java]
+----
+@Configuration
+@EnableRedisSessions
+public class RedisSessionsConfig {
+    @Bean
+    public RedisIndexConfiguration redisIndexConfiguration(){
+        return RedisIndexConfiguration.builder()
+                .withField(IndexedField.numeric("age").javaType(Integer.class).build())
+                .withField(IndexedField.tag("name").build()).build();
+    }
+}
+----
+
+=== Observability
+
+The same metrics discussed earlier will be available to you from spring.
+To see them, you must first add the EnableRedisSessionMetrics annotation to your configuration class:
+
+[,java]
+----
+@Configuration
+@EnableRedisSessions
+@EnableRedisSessionMetrics
+public class RedisSessionsConfig {
+}
+----
+
+This depends upon a MeterRegistry being registered with spring, for example you can use the Prometheus micrometer registry.
+To use that you can also include the registry in your build descriptor:
+
+==== Maven
+
+[source,xml]
+[subs="verbatim,attributes"]
+.pom.xml
+----
+<dependency>
+    <groupId>io.micrometer</groupId>
+    <artifactId>micrometer-registry-prometheus</artifactId>
+    <version>{micrometer-version}</version>
+</dependency>
+----
+
+==== Gradle
+
+[source,groovy]
+[subs="attributes"]
+.build.gradle
+----
+dependencies {
+    implementation 'io.micrometer:micrometer-registry-prometheus:{micrometer-version}'
+}
+----
+
+And then adding the actuator to our `application.properties` file:
+
+----
+management.endpoints.web.exposure.include: info, health, prometheus
+----
+
+With this done, when you're application runs the metrics will be visible at link:http://<host>:<port>/actuator/prometheus
