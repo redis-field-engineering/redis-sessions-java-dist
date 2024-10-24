@@ -9,7 +9,7 @@ Redis Ltd., on behalf of itself and its affiliates and subsidiaries worldwide
 Licensed Work:
 
 
-The Licensed Work means the Redis Sessions Java client libraries described [here](https://github.com/redis-field-engineering/redis-sessions-java-dist)
+The Licensed Work means the Redis Sessions Java client libraries distributed at https://github.com/redis-field-engineering/redis-sessions-java-dist
 
 Additional Use Grant:
 
