@@ -1,0 +1,104 @@
+.login-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.form-container {
+    max-width: 400px;
+    margin: 50px auto;
+    padding: 20px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    border-radius: 8px;
+}
+
+.login-form-button {
+    background-color: #007bff;
+    border-color: #007bff;
+    width: 100%;
+}
+
+.login-form-button:hover {
+    background-color: #0056b3;
+    border-color: #004085;
+}
+
+.form-header {
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.rounded-input{
+    border-radius: 0.5rem;
+}
+
+.flex-form-group {
+    display: flex;
+    align-items: center;
+    margin-bottom: 15px; /* adjust based on your spacing needs */
+}
+
+.flex-form-group label {
+    width: 100px; /* adjust based on your label width needs */
+    margin-right: 10px; /* space between label and input */
+    display: inline-block;
+}
+
+.flex-form-group .form-control {
+    flex: 1; /* ensures the input takes up the rest of the space */
+}
+
+.gallery {
+    display: flex;
+    /*flex-wrap: wrap;*/
+    justify-content: center;
+    margin: 0;
+}
+
+.bookCard-item{
+    flex: 1 1 20%;
+    margin: 0;
+    box-sizing: border-box;
+    border:1px solid black;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    overflow: hidden;
+}
+
+.cartBookCard-item {
+    flex: 1 1 60%;
+    width: 20%;
+    margin: 2px;
+    box-sizing: border-box;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    align-content: center;
+    overflow: hidden;
+    border-style: solid;
+}
+
+.cartBookCard-item img, .bookCard-item img {
+    max-width: 80%;
+    margin: 0;
+    height: auto;
+    object-fit: contain;
+}
+
+.cartBookCard-item .text-content, .bookCard-item .text-content {
+    width: 100%; /* Ensures it spans the full width of the item */
+    padding: 0 0; /* Adds some vertical padding for spacing */
+    margin: 0;
+}
+
+.cartBookCard-item p, .bookCard-item p{
+    margin: 0;
+    justify-content: center;
+    align-items: center;
+}

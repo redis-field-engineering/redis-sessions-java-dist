@@ -1,0 +1,29 @@
+/* Header.css */
+/*header {*/
+/*    display: flex;*/
+/*    justify-content: space-between;*/
+/*    align-items: center;*/
+/*    background-color: #f8f9fa;*/
+/*    padding: 20px;*/
+/*    text-align: left;*/
+
+/*}*/
+
+/*header nav ul {*/
+/*    list-style: none;*/
+/*    padding: 0;*/
+/*}*/
+
+/*header nav ul li {*/
+/*    display: inline;*/
+/*    margin: 0 10px;*/
+/*}*/
+
+/*header nav ul li a {*/
+/*    text-decoration: none;*/
+/*    color: #333;*/
+/*}*/
+
+header h1 {
+    margin: 0;
+}
