@@ -53,3 +53,5 @@ buildNumber.properties
 .terraform*
 terraform.tfstate
 terraform.tfstate.backup
+.tfvars
+.idea

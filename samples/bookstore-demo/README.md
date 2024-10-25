@@ -12,6 +12,18 @@ If you want to run the whole thing within docker (the project itself as well as 
 docker compose up
 ```
 
+### Remotely
+
+To run the app remotely, we have terraform for aws & gcp. To use them simply cd to your preferred platform, create a .tfvars file using `mv .tfvars.example .tfvars`, fill in the appropriate settings and then run the following:
+
+```bash
+terraform init
+terraform plan -var-file=.tfvars
+terraform apply -var-file=.tfvars --auto-approve
+```
+
+It will take some time to build (after the resource are created) but it will be deployed to `bookstore.your.subdomain.tld`
+
 ### Locally
 
 To run this project you must first install the required jars locally:
