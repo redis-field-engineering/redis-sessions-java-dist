@@ -15,8 +15,8 @@ If you want to run the whole thing within docker (the project itself as well as 
 # ensure you have maven if needed
 # brew install maven
 
-mvn package
-docker compose up
+# build and start containers
+./start-containers.sh
 ```
 
 ### Remotely
