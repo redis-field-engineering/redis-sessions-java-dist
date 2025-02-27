@@ -9,7 +9,14 @@ This is an example project demonstrating the usage of the Redis Sessions Java li
 If you want to run the whole thing within docker (the project itself as well as the accompanying services) you may do so using:
 
 ```shell
-docker compose up
+# ensure you have jdk 17+ installed, ex with sdkman
+# sdk install java 17.0.13-amzn
+
+# ensure you have maven if needed
+# brew install maven
+
+# build and start containers
+./start-containers.sh
 ```
 
 ### Remotely
