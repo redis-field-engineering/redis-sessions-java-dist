@@ -3,10 +3,8 @@
 :project-owner:      redis-field-engineering
 :project-name:       redis-sessions-java
 :project-group:      com.redis
-:name:               Redis Sessions Java
-:project-version:    0.1.12
+:project-version: 0.1.12
 :micrometer-version: 1.10.2
-:dist-repo-name:     {project-name}-dist
 :codecov-token:      38MjMBOc2i
 
 image:https://github.com/{project-owner}/{project-name}/actions/workflows/early-access.yml/badge.svg["Build Status", link="https://github.com/{project-owner}/{project-name}/actions/workflows/early-access.yml"]
@@ -48,7 +46,7 @@ To add Redis Sessions Java to your Maven project, simply add the following to yo
 
 ==== Gradle
 
-Add the Redis Sessions Java dependency to your `build.gradle` file:
+Add the Redis Sessions Java dependency to your `build.gradle` file from the https://central.sonatype.com/artifact/com.redis/redis-sessions-java[central repository]
 
 [source,groovy]
 [subs="attributes"]
